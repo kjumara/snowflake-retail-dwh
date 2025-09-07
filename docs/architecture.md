@@ -16,13 +16,19 @@ Each table corresponds 1:1 to a source CSV file, with no transformations applied
 
 > This layer provides an immutable copy of the source data for traceability and reproducibility.
 ---
-## STAGE Layer
-- Purpose: Apply light cleaning and conformance.  
-- Tasks include:
-  - Casting strings to correct data types (e.g., `DATE`, `NUMBER`).  
-  - Deduplicating rows.  
-  - Standardizing column names.  
-- Why: Creates a clean, consistent foundation for transformations.  
+## STAGE Layer - Views
+The STAGE layer cleans and standardizes data from the RAW layer while keeping a 1:1 mapping to source entities.  
+
+This layer ensures consistency, prepares numeric/text fields for downstream modeling, and introduces basic derived attributes.
+
+
+- **CUSTOMERS** → Trimmed IDs and city names, standardized casing, preserved `zip_code_prefix` as STRING.  
+- **ORDERS** → Cleaned IDs, converted timestamps, and added `order_date` for easier filtering.  
+- **ORDER_ITEMS** → Standardized IDs, cast numeric values, renamed `shipping_charges` → `freight_value`, and added `total_value` (price + freight).  
+- **PRODUCTS** → Standardized category names, cast dimensions to numeric, and introduced `volume_cm3` (length * width * height).  
+- **PAYMENTS** → Cleaned IDs, normalized `payment_type` to lowercase, and cast numeric fields.  
+
+> This layer acts as a **clean but lightly transformed** foundation for business-ready transformations in the CORE layer.
 
 ---
 ## CORE Layer
