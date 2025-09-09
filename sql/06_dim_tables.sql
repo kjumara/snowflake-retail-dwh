@@ -2,6 +2,7 @@
 -- Synthetic date dimension for joining facts to calendar
 
 -- Find date range
+
 SELECT
     MIN(order_date) AS min_date,
     MAX(order_date) AS max_date
@@ -26,7 +27,7 @@ SELECT
     YEAR(full_date)                         AS year,
     QUARTER(full_date)                      AS quarter,
     MONTH(full_date)                        AS month,
-    --TO_CHAR(full_date,'Mon')                AS month_name,
+    TO_CHAR(full_date,'Mon')                AS month_name,
     DAY(full_date)                          AS day_of_month,
     DAYOFWEEK(full_date)                    AS day_of_week,
     TO_CHAR(full_date, 'DY')                AS day_name,
@@ -63,17 +64,19 @@ WHERE rn = 1
 ORDER BY customer_id;
 
 -- Create Dim_Seller
--- Using seller id and product id to keep track of sellers
+-- Clean, deduped seller dimension
 CREATE OR REPLACE TABLE DEMO_RETAIL.CORE.DIM_SELLER AS
+WITH deduped AS (
+    SELECT seller_id,
+    ROW_NUMBER() OVER (PARTITION BY seller_id ORDER BY seller_id) AS rn
+    FROM DEMO_RETAIL.STAGE.ORDER_ITEMS
+)
 SELECT
-    ROW_NUMBER() OVER (ORDER BY oi.seller_id, oi.product_id) AS seller_key,
-    oi.seller_id,
-    oi.product_id,
-    p.category_name
-FROM DEMO_RETAIL.STAGE.ORDER_ITEMS oi
-LEFT JOIN DEMO_RETAIL.STAGE.PRODUCTS p
-    ON oi.product_id = p.product_id
-GROUP BY oi.seller_id, oi.product_id, p.category_name;
+    SEQ8() AS seller_sk, -- surrogate key
+    seller_id
+FROM deduped
+WHERE rn = 1
+ORDER BY seller_id;
 
 -- Create Dim_Product
 -- Clean, deduped product dimension with surrogate key
@@ -119,6 +122,7 @@ ORDER BY payment_type;
 
 -- Validation Queries
 -- Quick sanity checks to confirm tables are working as expected
+
 SELECT *
 FROM DEMO_RETAIL.CORE.DIM_DATE
 LIMIT 5;
