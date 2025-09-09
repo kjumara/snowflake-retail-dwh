@@ -31,14 +31,23 @@ This layer ensures consistency, prepares numeric/text fields for downstream mode
 > This layer acts as a **clean but lightly transformed** foundation for business-ready transformations in the CORE layer.
 
 ---
-## CORE Layer
-- Purpose: Transform staged data into **fact** and **dimension** tables (star schema).  
-- Example tables:
-  - `DIM_CUSTOMERS`, `DIM_PRODUCTS`, `DIM_DATES` (dimensions)  
-  - `FACT_ORDERS` (fact table joining orders, items, and payments)  
-- Why: Business-ready model that is easy to query and connects across entities.
+## CORE Layer — Dim & Fact Tables
+This layer transformed staged data into **deduplicated dimensions and fact tables** using a **star schema** for business-ready analytics.
 
----
+### Dim Tables
+- **DIM_CUSTOMER** → Deduplicated customer records, surrogate key added for joining facts.
+- **DIM_PRODUCT** → Cleaned product attributes, numeric dimensions, calculated `volume_cm3`, surrogate key added. 
+- **DIM_SELLER** → Deduplicated seller records (one row per seller), surrogate key added. 
+- **DIM_DATE** → Standard date dimension for filtering and aggregations. 
+- **DIM_PAYMENT_TYPE** → Normalized payment types, surrogate key added.
+
+### Fact Tables
+- **FACT_ORDER** → One row per order, links to customer and order date for traceability.
+- **FACT_ORDER_ITEM** → One row per item in an order, links to products and sellers, includes price, freight, and total value.
+- **FACT_PAYMENT** → One row per payment, links to orders and payment type, includes installments and payment value.
+
+> This layer provides a business-ready model that is easy to query, supports analytics, and preserves links to original staged data.
+
 ## MART Layer
 - Purpose: Create **aggregated views/tables** optimized for analysis and dashboards.  
 - Example tables:
